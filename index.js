@@ -3,14 +3,16 @@ const dotenv = require('dotenv');
 dotenv.config({ path: './config.env' });
 
 const connectDb = require('./db.config');
-const bootcamps = require('./router/bootcamps.router');
+const bootcamps = require('./bootcamps/bootcamps.router');
 
 connectDb();
+
 const app = express();
-const PORT = process.env.PORT || 5000;
+app.use(express.json());
 
 app.use('/api/v1/bootcamps', bootcamps);
 
+const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => console.log(`Server is running on PORT ${process.env.PORT}`));
 
 process.on('unhandledRejection', (err) => {

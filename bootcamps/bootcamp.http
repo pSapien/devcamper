@@ -1,0 +1,13 @@
+@url = http://localhost:5000/api/v1
+
+
+// get all the bootcamps
+GET {{url}}/bootcamp
+
+// get a bootcamp
+###
+
+GET {{url}}/bootcamps/5ec54f3b6015d64c018e97f6
+###
+
+

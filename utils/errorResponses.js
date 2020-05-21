@@ -13,7 +13,7 @@ class BadRequest extends ErrorResponse {
   }
 }
 
-const isCustomError = error => error instanceof BadRequest;
+const isCustomError = (error) => error instanceof BadRequest;
 
 module.exports = {
   ErrorResponse,

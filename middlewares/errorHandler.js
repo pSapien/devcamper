@@ -11,7 +11,7 @@ function errorHandler(err, req, res) {
   let error = err;
 
   if (err instanceof mongoose.Error.CastError)
-    error = new BadRequest(`Resource ${err.stringValue} not found`);
+    error = new BadRequest(`Resource ${err.value} not found`);
 
   if (err instanceof mongoose.Error.ValidationError)
     error = new BadRequest(Object.values(err.errors).map((val) => val.message));

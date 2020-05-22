@@ -6,6 +6,26 @@ const { BadRequest } = require("../utils/errorResponses");
 const BootcampBadRequest = (id) =>
   new BadRequest(`Bootcamp of ${id} not found`);
 
+function parseComparisonQueryOperatorsIfAny(query) {
+  const QUERY_OPERATORS_KEYS = ["eq", "gt", "gte", "lt", "lte"];
+  const parsedQuery = { ...query };
+
+  Object.keys(query).forEach((param) => {
+    const maybeComparsionQuery = query[param];
+    const maybeQueryOperatorKey =
+      typeof query[param] === "object" && Object.keys(maybeComparsionQuery)[0];
+
+    if (QUERY_OPERATORS_KEYS.includes(maybeQueryOperatorKey)) {
+      const quantity = maybeComparsionQuery[maybeQueryOperatorKey];
+      const newMongooseOperatorKey = `$${maybeQueryOperatorKey}`;
+
+      parsedQuery[param] = { [newMongooseOperatorKey]: quantity };
+    }
+  });
+
+  return parsedQuery;
+}
+
 /**
  * @desc   Get all bootcamps
  * @route  GET /api/v1/bootcamps
@@ -13,7 +33,8 @@ const BootcampBadRequest = (id) =>
  */
 
 const getBootcamps = asyncHandler(async (req, res, next) => {
-  const bootcamp = await Schema.find();
+  const parsedQuery = parseComparisonQueryOperatorsIfAny(req.query);
+  const bootcamp = await Schema.find(parsedQuery);
   res.status(201).json({ success: true, data: bootcamp });
 });
 
@@ -22,7 +43,7 @@ const getBootcamps = asyncHandler(async (req, res, next) => {
  * @route  POST /api/v1/bootcamps
  * @access Private
  */
-const createBootcamp = asyncHandler(async (req, res, next) => {
+const createBootcamp = asyncHandler(async (req, res) => {
   const newBootcamp = await Schema.create(req.body);
   res.status(201).json({ success: true, data: newBootcamp });
 });

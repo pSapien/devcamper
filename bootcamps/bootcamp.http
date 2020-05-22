@@ -2,7 +2,7 @@
 
 
 // get all the bootcamps
-GET {{url}}/bootcamp
+GET {{url}}/bootcamps
 
 // get a bootcamp
 ###
@@ -11,3 +11,7 @@ GET {{url}}/bootcamps/5ec54f3b6015d64c018e97f6
 ###
 
 
+// get bootcamps with query params
+###
+GET {{url}}/bootcamps?averageCost[eq]=2000&housing=true
+###

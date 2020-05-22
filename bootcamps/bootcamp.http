@@ -13,5 +13,10 @@ GET {{url}}/bootcamps/5ec54f3b6015d64c018e97f6
 
 // get bootcamps with query params
 ###
-GET {{url}}/bootcamps?averageCost[eq]=2000&housing=true
+GET {{url}}/bootcamps?averageCost[eq]=2000&housing=true&select=name,description
+###
+
+// get bootcamps with select
+###
+GET {{url}}/bootcamps?select=name,description
 ###

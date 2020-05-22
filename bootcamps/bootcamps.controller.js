@@ -2,29 +2,23 @@ const Schema = require("./bootcamp.model");
 
 const asyncHandler = require("../utils/asyncHandler");
 const { BadRequest } = require("../utils/errorResponses");
+const { pipe } = require("../utils/fp-utils");
 
 const BootcampBadRequest = (id) =>
   new BadRequest(`Bootcamp of ${id} not found`);
 
-function parseComparisonQueryOperatorsIfAny(query) {
-  const QUERY_OPERATORS_KEYS = ["eq", "gt", "gte", "lt", "lte"];
-  const parsedQuery = { ...query };
+const OPERATORS_REGEX = /\b(eq|gt|gte|lt|lte)\b/g;
+const parseComparisonQueryOperatorsIfAny = (query) =>
+  JSON.parse(
+    JSON.stringify(query).replace(OPERATORS_REGEX, (match) => `$${match}`)
+  );
+const extractFields = (query) => query.split(",").join(" ");
 
-  Object.keys(query).forEach((param) => {
-    const maybeComparsionQuery = query[param];
-    const maybeQueryOperatorKey =
-      typeof query[param] === "object" && Object.keys(maybeComparsionQuery)[0];
-
-    if (QUERY_OPERATORS_KEYS.includes(maybeQueryOperatorKey)) {
-      const quantity = maybeComparsionQuery[maybeQueryOperatorKey];
-      const newMongooseOperatorKey = `$${maybeQueryOperatorKey}`;
-
-      parsedQuery[param] = { [newMongooseOperatorKey]: quantity };
-    }
-  });
-
-  return parsedQuery;
-}
+const removeSelect = (query) => {
+  const q = { ...query };
+  if (q.select) delete q.select;
+  return q;
+};
 
 /**
  * @desc   Get all bootcamps
@@ -32,9 +26,15 @@ function parseComparisonQueryOperatorsIfAny(query) {
  * @access Public
  */
 
-const getBootcamps = asyncHandler(async (req, res, next) => {
-  const parsedQuery = parseComparisonQueryOperatorsIfAny(req.query);
-  const bootcamp = await Schema.find(parsedQuery);
+const getBootcamps = asyncHandler(async (req, res) => {
+  const { query } = req;
+
+  let baseQuery = Schema.find(
+    pipe(parseComparisonQueryOperatorsIfAny, removeSelect)(query),
+    query.select ? extractFields(query.select) : null
+  );
+
+  const bootcamp = await baseQuery;
   res.status(201).json({ success: true, data: bootcamp });
 });
 

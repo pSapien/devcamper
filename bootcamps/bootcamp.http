@@ -16,7 +16,7 @@ GET {{url}}/bootcamps/5ec54f3b6015d64c018e97f6
 GET {{url}}/bootcamps?averageCost[eq]=2000&housing=true&select=name,description
 ###
 
-// get bootcamps with select
+// get bootcamps with select and sort
 ###
-GET {{url}}/bootcamps?select=name,description
+GET {{url}}/bootcamps?select=name,description&sort=name
 ###

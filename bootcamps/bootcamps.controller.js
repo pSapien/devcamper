@@ -13,7 +13,6 @@ const parseComparisonQueryOperatorsIfAny = (query) =>
     JSON.stringify(query).replace(OPERATORS_REGEX, (match) => `$${match}`)
   );
 const extractFields = (query) => query.split(",").join(" ");
-
 const removeSelect = (query) => {
   const q = { ...query };
   if (q.select) delete q.select;
@@ -29,12 +28,12 @@ const removeSelect = (query) => {
 const getBootcamps = asyncHandler(async (req, res) => {
   const { query } = req;
 
-  let baseQuery = Schema.find(
-    pipe(parseComparisonQueryOperatorsIfAny, removeSelect)(query),
-    query.select ? extractFields(query.select) : null
-  );
+  const bootcamp = await Schema.find(
+    pipe(parseComparisonQueryOperatorsIfAny, removeSelect)(query)
+  )
+    .select(query.select ? extractFields(query.select) : null)
+    .sort(query.sort ? extractFields(query.sort) : null);
 
-  const bootcamp = await baseQuery;
   res.status(201).json({ success: true, data: bootcamp });
 });
 

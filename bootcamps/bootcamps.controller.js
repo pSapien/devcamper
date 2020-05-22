@@ -12,11 +12,34 @@ const parseComparisonQueryOperatorsIfAny = (query) =>
   JSON.parse(
     JSON.stringify(query).replace(OPERATORS_REGEX, (match) => `$${match}`)
   );
-const extractFields = (query) => query.split(",").join(" ");
-const removeSelect = (query) => {
+
+const extractFields = (query) => (key) =>
+  query[key] ? query[key].split(",").join(" ") : null;
+
+const removeFields = (fields) => (query) => {
   const q = { ...query };
-  if (q.select) delete q.select;
+  fields.forEach((field) => {
+    if (q[field]) delete q[field];
+  });
   return q;
+};
+
+const getPaginationData = async (query, Schema) => {
+  const page = Number(query.page) || 1;
+  const limit = Number(query.limit) || 1;
+  const startIdx = (page - 1) * limit;
+  const endIdx = page * limit;
+  const total = await Schema.countDocuments();
+
+  let pagination = {};
+  if (endIdx < total) pagination.next = { page: page + 1, limit };
+  if (startIdx > 0) pagination.prev = { page: page - 1, limit };
+
+  return {
+    pagination,
+    skip: startIdx,
+    limit,
+  };
 };
 
 /**
@@ -27,14 +50,21 @@ const removeSelect = (query) => {
 
 const getBootcamps = asyncHandler(async (req, res) => {
   const { query } = req;
+  const extractQueryFieldsOrNull = extractFields(query);
+  const { pagination, skip, limit } = await getPaginationData(query, Schema);
 
   const bootcamp = await Schema.find(
-    pipe(parseComparisonQueryOperatorsIfAny, removeSelect)(query)
+    pipe(
+      parseComparisonQueryOperatorsIfAny,
+      removeFields(["select", "sort", "limit", "page"])
+    )(query)
   )
-    .select(query.select ? extractFields(query.select) : null)
-    .sort(query.sort ? extractFields(query.sort) : null);
+    .select(extractQueryFieldsOrNull("select"))
+    .sort(extractQueryFieldsOrNull("sort"))
+    .skip(skip)
+    .limit(limit);
 
-  res.status(201).json({ success: true, data: bootcamp });
+  res.status(201).json({ success: true, data: bootcamp, pagination });
 });
 
 /**

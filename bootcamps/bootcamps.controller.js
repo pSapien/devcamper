@@ -2,7 +2,6 @@ const Schema = require("./bootcamp.model");
 
 const asyncHandler = require("../utils/asyncHandler");
 const { BadRequest } = require("../utils/errorResponses");
-const { pipe } = require("../utils/fp-utils");
 const queryParamsParser = require("../utils/queryParamsParser");
 const queryParamsPaginator = require("../utils/queryParamsPaginator");
 

@@ -23,6 +23,10 @@ const Schema = new mongoose.Schema({
     trim: true,
     maxlength: [500, "The max length of the description is 50. Exceeded"],
   },
+  address: {
+    type: String,
+    required: [true, "Please add an address"],
+  },
   phone: {
     type: String,
     maxlength: [20, "The max length of the phone is 50. Exceeded"],

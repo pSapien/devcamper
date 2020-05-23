@@ -6,6 +6,7 @@ const errorHandler = require('./middlewares/errorHandler');
 
 const connectDb = require('./db.config');
 const bootcamps = require('./bootcamps/bootcamps.router');
+const courses = require('./courses/courses.router');
 
 connectDb();
 
@@ -13,6 +14,7 @@ const app = express();
 app.use(express.json());
 
 app.use('/api/v1/bootcamps', bootcamps);
+app.use('/api/v1/courses', courses);
 
 app.use(errorHandler);
 

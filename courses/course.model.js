@@ -32,12 +32,12 @@ const Schema = new mongoose.Schema({
     default: Date.now,
   },
   bootcamp: {
-    type: mongoose.Schema.ObjectId,
+    type: mongoose.SchemaTypes.ObjectId,
     ref: "Bootcamp",
     required: true,
   },
   user: {
-    type: mongoose.Schema.ObjectId,
+    type: mongoose.SchemaTypes.ObjectId,
     ref: "User",
     required: true,
   },

@@ -1,0 +1,5 @@
+@url = http://localhost:5000/api/v1
+
+
+// get all the courses
+GET {{url}}/courses

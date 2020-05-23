@@ -3,44 +3,11 @@ const Schema = require("./bootcamp.model");
 const asyncHandler = require("../utils/asyncHandler");
 const { BadRequest } = require("../utils/errorResponses");
 const { pipe } = require("../utils/fp-utils");
+const queryParamsParser = require("../utils/queryParamsParser");
+const queryParamsPaginator = require("../utils/queryParamsPaginator");
 
 const BootcampBadRequest = (id) =>
   new BadRequest(`Bootcamp of ${id} not found`);
-
-const OPERATORS_REGEX = /\b(eq|gt|gte|lt|lte)\b/g;
-const parseComparisonQueryOperatorsIfAny = (query) =>
-  JSON.parse(
-    JSON.stringify(query).replace(OPERATORS_REGEX, (match) => `$${match}`)
-  );
-
-const extractFields = (query) => (key) =>
-  query[key] ? query[key].split(",").join(" ") : null;
-
-const removeFields = (fields) => (query) => {
-  const q = { ...query };
-  fields.forEach((field) => {
-    if (q[field]) delete q[field];
-  });
-  return q;
-};
-
-const getPaginationData = async (query, Schema) => {
-  const page = Number(query.page) || 1;
-  const limit = Number(query.limit) || 1;
-  const startIdx = (page - 1) * limit;
-  const endIdx = page * limit;
-  const total = await Schema.countDocuments();
-
-  let pagination = {};
-  if (endIdx < total) pagination.next = { page: page + 1, limit };
-  if (startIdx > 0) pagination.prev = { page: page - 1, limit };
-
-  return {
-    pagination,
-    skip: startIdx,
-    limit,
-  };
-};
 
 /**
  * @desc   Get all bootcamps
@@ -50,17 +17,13 @@ const getPaginationData = async (query, Schema) => {
 
 const getBootcamps = asyncHandler(async (req, res) => {
   const { query } = req;
-  const extractQueryFieldsOrNull = extractFields(query);
-  const { pagination, skip, limit } = await getPaginationData(query, Schema);
+  const { baseQuery, selectBy, sortBy } = queryParamsParser(query);
+  const totalPages = await Schema.countDocuments();
+  const { pagination, skip, limit } = queryParamsPaginator(query, totalPages);
 
-  const bootcamp = await Schema.find(
-    pipe(
-      parseComparisonQueryOperatorsIfAny,
-      removeFields(["select", "sort", "limit", "page"])
-    )(query)
-  )
-    .select(extractQueryFieldsOrNull("select"))
-    .sort(extractQueryFieldsOrNull("sort"))
+  const bootcamp = await Schema.find(baseQuery)
+    .select(selectBy)
+    .sort(sortBy)
     .skip(skip)
     .limit(limit);
 
